@@ -1,0 +1,31 @@
+{
+ "name": "fx02_energy_orb_ring_right",
+ "source": "itch Energy kiddolonk (pin57)",
+ "width": 868,
+ "height": 768,
+ "frame_count": 13,
+ "durations_ms": [
+  50,
+  50,
+  50,
+  50,
+  50,
+  50,
+  50,
+  50,
+  50,
+  50,
+  50,
+  50,
+  50
+ ],
+ "total_ms": 650,
+ "source_box": [
+  946,
+  1813,
+  246,
+  1013
+ ],
+ "method": "Already pixel art (native 1920x1080): native 1:1, exact key on flat bg (34,28,26), no conversion, no downscale. Single cluster, mask-based (clean all-bg column gap x844-945 separates the two orbs).",
+ "note": "13 frames, all 50ms = 20 fps, total 0.65s."
+}

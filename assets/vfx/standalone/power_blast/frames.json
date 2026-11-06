@@ -1,0 +1,15 @@
+{
+  "name": "vfx_power_blast_pixel",
+  "source": "Pinterest pin 529947081132498636 (GIF source, NOT video: 358x312, 7 frames, 90ms per frame, 0.63s loop)",
+  "frames": 7,
+  "fps": 11.11,
+  "frame_duration_ms": 90,
+  "frame_w": 128,
+  "frame_h": 111,
+  "cols": 7,
+  "rows": 1,
+  "crop_source": "x 3-344, y 3-300",
+  "method": "source is a GIF on pure black background (corners 0,0,0 in all frames), so luminance alpha = clip((max_channel-8)/160, 0, 1), no background subtraction needed; NEAREST downscale to 128 wide. All 7 source frames kept, nothing trimmed",
+  "blending": "normal with transparency; Additive also works for burst glow",
+  "timing_note": "keep 90ms per frame (~11fps) in Godot; at 30fps it would play ~3x too fast"
+}

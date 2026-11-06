@@ -1,0 +1,16 @@
+{
+  "name": "vfx_fire_orb_pixel",
+  "source": "Pinterest pin 573786808766258935 (GIF source, NOT video: 416x392, 15 frames, 60ms per frame, 16.67fps, 0.9s loop)",
+  "trim": "all 15 source frames kept (0.9s at 16.67fps): fire beam -> fire ring -> energy sphere grows with orbiting black/white/yellow rings and glowing orbs inside -> sphere sustains -> cools to dark red orbs -> faint smoke wisp tail",
+  "frames": 15,
+  "fps": 16.67,
+  "frame_duration_ms": 60,
+  "frame_w": 192,
+  "frame_h": 150,
+  "cols": 5,
+  "rows": 3,
+  "crop_source": "x 20-411, y 45-351",
+  "method": "background subtraction from a FLAT gray plate (measured corner color 108,107,107, std 0.43 across all frames, essentially uniform): alpha = clip((max-channel diff-16)/110) then Gaussian blur radius 3 on alpha only to melt GIF dither noise. Subtraction (not brightness threshold) was required so the BLACK orbiting rings survive: black vs gray gives diff ~108, same as bright fire vs gray",
+  "blending": "normal with transparency; Additive also works for the fire glow",
+  "timing_note": "keep 60ms per frame (16.67fps) in Godot; at 30fps it would play 1.8x too fast"
+}

@@ -1,0 +1,7 @@
+# fx04_bottom_right_large
+
+- Kich thuoc: 125x146
+- So frame: 10 (nhip 60/100ms, tong 0,92s)
+- Khung goc trong anh goc: x425-549, y215-360
+- Phuong phap: Already pixel art: native 1:1, exact key on pure black bg (0,0,0). Split cluster by per-frame components (nearest reference).
+- Su dung: nen den nen thu Additive cho hieu ung phat sang, Normal neu hieu ung co mau toi can giu. Anh goc la pixel, giu nguyen 1:1.

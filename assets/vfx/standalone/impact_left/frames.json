@@ -1,0 +1,36 @@
+{
+ "pack": "impact_left",
+ "source": "itch GIF 1920x1080",
+ "source_frames": [
+  1,
+  13
+ ],
+ "fps": 20,
+ "frame_ms": 50,
+ "frame_count": 13,
+ "width": 790,
+ "height": 600,
+ "crop": [
+  110,
+  250,
+  900,
+  850
+ ],
+ "frames": [
+  "frame_001.png",
+  "frame_002.png",
+  "frame_003.png",
+  "frame_004.png",
+  "frame_005.png",
+  "frame_006.png",
+  "frame_007.png",
+  "frame_008.png",
+  "frame_009.png",
+  "frame_010.png",
+  "frame_011.png",
+  "frame_012.png",
+  "frame_013.png"
+ ],
+ "method": "native-res crop, hard bg key (34,28,26), NO downscale",
+ "note": "frames 10-11 are fully empty; frames 12-13 are the flash coda (f12 colored, f13 white, GIF ends at f13)"
+}

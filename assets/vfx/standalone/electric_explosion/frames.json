@@ -1,0 +1,53 @@
+{
+ "pack": "electric_explosion",
+ "source": "Pinterest GIF 800x641 (Electric Explosion 2D FX)",
+ "source_frames": [
+  56,
+  85
+ ],
+ "fps": 25,
+ "frame_ms": 40,
+ "frame_count": 30,
+ "width": 192,
+ "height": 161,
+ "crop": [
+  100,
+  45,
+  685,
+  535
+ ],
+ "frames": [
+  "frame_001.png",
+  "frame_002.png",
+  "frame_003.png",
+  "frame_004.png",
+  "frame_005.png",
+  "frame_006.png",
+  "frame_007.png",
+  "frame_008.png",
+  "frame_009.png",
+  "frame_010.png",
+  "frame_011.png",
+  "frame_012.png",
+  "frame_013.png",
+  "frame_014.png",
+  "frame_015.png",
+  "frame_016.png",
+  "frame_017.png",
+  "frame_018.png",
+  "frame_019.png",
+  "frame_020.png",
+  "frame_021.png",
+  "frame_022.png",
+  "frame_023.png",
+  "frame_024.png",
+  "frame_025.png",
+  "frame_026.png",
+  "frame_027.png",
+  "frame_028.png",
+  "frame_029.png",
+  "frame_030.png"
+ ],
+ "method": "static gradient plate (median f77-f85) subtraction, diff dilated r1, NEAREST 192x161, hard alpha ramp 15-100 (lightning solid, smoke translucent), NO blur",
+ "note": "one complete cycle: bolt f56, flash f57-58, arcs/smoke/fade f59-76, empty tail f77-85; f62/f63 duplicate hold kept"
+}

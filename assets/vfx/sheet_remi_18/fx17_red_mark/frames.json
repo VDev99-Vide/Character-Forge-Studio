@@ -1,0 +1,38 @@
+{
+ "name": "fx17_red_mark",
+ "source": "Remi sheet (pin45)",
+ "width": 42,
+ "height": 15,
+ "frame_count": 20,
+ "durations_ms": [
+  100,
+  100,
+  100,
+  100,
+  100,
+  100,
+  100,
+  100,
+  100,
+  100,
+  100,
+  100,
+  100,
+  100,
+  100,
+  100,
+  100,
+  100,
+  100,
+  100
+ ],
+ "total_ms": 2000,
+ "source_box": [
+  154,
+  195,
+  303,
+  317
+ ],
+ "method": "Already pixel art: native 1:1, exact key on flat bg (29,22,22). Single cluster, mask-based (pixel in cluster union mask AND non-bg in this frame).",
+ "note": "20 frames at 10 fps (100 ms each). Effects grow from f1 to f20; the source is not a seamless loop (f20 -> f1 resets)."
+}

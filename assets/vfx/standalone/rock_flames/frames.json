@@ -1,0 +1,29 @@
+{
+ "pack": "rock_flames",
+ "source": "itch GIF 1920x1080 (Magic Spells Vol 3)",
+ "source_frames": [
+  1,
+  7
+ ],
+ "fps": 20,
+ "frame_ms": 50,
+ "frame_count": 7,
+ "width": 640,
+ "height": 880,
+ "crop": [
+  640,
+  100,
+  1280,
+  980
+ ],
+ "frames": [
+  "frame_001.png",
+  "frame_002.png",
+  "frame_003.png",
+  "frame_004.png",
+  "frame_005.png",
+  "frame_006.png",
+  "frame_007.png"
+ ],
+ "method": "native-res crop, hard bg key (58,18,43), NO downscale"
+}

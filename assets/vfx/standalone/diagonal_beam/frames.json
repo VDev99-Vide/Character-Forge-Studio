@@ -1,0 +1,14 @@
+{
+  "name": "vfx_diagonal_beam_pixel",
+  "source": "direct video link 3a2c7dce909e103fdc38865eb2942230.mp4 (1280x720, 30fps)",
+  "frames": 105,
+  "fps": 30,
+  "frame_w": 192,
+  "frame_h": 108,
+  "cols": 15,
+  "rows": 7,
+  "trim_source_frames": "8-112 (charge orb + flash + diagonal beam + fade; frame 49 is a deliberate 1-frame black blink between charge flash and beam; faint dot trail after 112 dropped)",
+  "method": "background subtraction vs median plate of empty head/tail frames (camera static, head-vs-tail mean abs diff 0.13), soft alpha = clip((max-channel diff-16)/110), NEAREST downscale to 192x108",
+  "blending": "normal with transparency; Additive also works for beam glow",
+  "direction": "beam travels top-left to bottom-right diagonal; charge orb at top-left"
+}

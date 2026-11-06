@@ -1,0 +1,28 @@
+{
+ "name": "fx14_dark_mid",
+ "source": "itch sheet (pin49)",
+ "width": 166,
+ "height": 55,
+ "frame_count": 10,
+ "durations_ms": [
+  100,
+  100,
+  60,
+  100,
+  100,
+  100,
+  60,
+  100,
+  100,
+  100
+ ],
+ "total_ms": 920,
+ "source_box": [
+  392,
+  557,
+  452,
+  506
+ ],
+ "method": "Already pixel art: native 1:1, exact key on pure black bg (0,0,0). Single cluster, mask-based.",
+ "note": "10 frames, durations 60/100ms, total 0.92s. Effects grow f1->f8, stabilize f8-f10; loop resets (f10->f1). Black bg: use Additive for glow, Normal if the effect has dark colors."
+}

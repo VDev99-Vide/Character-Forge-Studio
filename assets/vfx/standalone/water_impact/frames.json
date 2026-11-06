@@ -1,0 +1,36 @@
+{
+ "pack": "water_impact",
+ "source": "Pinterest GIF 550x400 (Pixel Art Impact Effect)",
+ "source_frames": [
+  1,
+  13
+ ],
+ "fps": 20,
+ "frame_ms": 50,
+ "frame_count": 13,
+ "width": 192,
+ "height": 157,
+ "crop": [
+  70,
+  5,
+  455,
+  320
+ ],
+ "frames": [
+  "frame_001.png",
+  "frame_002.png",
+  "frame_003.png",
+  "frame_004.png",
+  "frame_005.png",
+  "frame_006.png",
+  "frame_007.png",
+  "frame_008.png",
+  "frame_009.png",
+  "frame_010.png",
+  "frame_011.png",
+  "frame_012.png",
+  "frame_013.png"
+ ],
+ "method": "smooth animation -> NEAREST 192x157, bg (97,65,33) diff dilated r1, hard alpha ramp 15-100, NO blur",
+ "note": "single one-shot impact, all 13 frames kept, no rotation; crop excludes 1px top/left edge bands"
+}

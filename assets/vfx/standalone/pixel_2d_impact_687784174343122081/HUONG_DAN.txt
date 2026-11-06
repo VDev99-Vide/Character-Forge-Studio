@@ -1,0 +1,31 @@
+﻿BỘ ASSET VFX PIXEL 2D
+
+Nguồn: https://www.pinterest.com/pin/687784174343122081/
+Video nguồn: 1280×672 px, 258 khung hình, 30 FPS, dài 8,6 giây.
+Đã loại nền sân khấu xanh/xám và chuyển các khung gốc sang lưới pixel 160×84.
+Giữ đầy đủ các pha năng lượng xanh, vụ nổ lửa, mảnh đất và bụi; giữ thứ tự và thời gian nguồn.
+
+FILE TRONG GÓI
+- frames_rgba/: 258 khung PNG RGBA trong suốt, 160×84 px, đánh số từ frame_0000.png.
+- sprite_sheet.png: atlas 16 cột, khung 160×84, đệm 2 px; ảnh 2624×1496.
+- sprite_sheet.json: tọa độ từng khung và thông tin animation.
+- animation.json: FPS, thời gian mỗi frame, pivot, các clip đầy đủ/đang hoạt động.
+- screen_flash_events.json: 4 khung chớp toàn màn hình ở pha va chạm, dạng sự kiện màu đặt sau VFX.
+- vfx_pixel_transparent.gif: GIF nền trong suốt 640×336, phóng 4 lần bằng nearest-neighbor.
+- vfx_pixel_preview.gif: GIF xem thử trên nền tối để nhìn vùng sáng rõ hơn.
+
+ĐƯA VÀO GAME
+Ưu tiên dùng các PNG RGBA hoặc atlas, vì PNG giữ được alpha bán trong suốt của tia sáng và bụi.
+GIF chỉ hỗ trợ alpha bật/tắt, được dùng làm bản xem thử; không phải bản alpha đầy đủ.
+Chạy 30 FPS, mỗi frame 1/30 giây. GIF dùng nhịp 30/40/30 ms để giữ tổng 8,6 giây.
+Filter/sampling: Nearest / Point. Tắt mipmap nếu dùng ở kích thước pixel.
+Pivot gợi ý: x=80, y=63 trong khung 160×84 (tương ứng 0,5; 0,75).
+Giữ nguyên khung khi chạy animation, không tự crop từng PNG để tránh rung lệch vị trí.
+Clip impact_full chứa toàn bộ video; impact_active bỏ khoảng nền trống ở đầu/cuối.
+Nên phát một lần cho skill. GIF xem thử tự lặp.
+Video có 4 khung chớp/đảo màu toàn màn hình: frame 78 là nền chớp đen, frame 79–81 là nền chớp sáng (chỉ số tính từ 0).
+Các PNG ở đây đã được tách khỏi sân khấu; dùng thêm screen_flash_events.json nếu muốn giữ nhịp chớp toàn màn hình.
+GIF preview đã ghép các màu chớp này; GIF trong suốt chỉ chứa phần VFX.
+
+Phần hiệu ứng chạm mép video được giữ theo phạm vi nguồn, không dựng thêm phần nằm ngoài hình.
+Tách nền bằng đối chiếu nền trống và điều chỉnh alpha; vùng sáng/bụi mờ là phần khôi phục xấp xỉ từ video đã ghép nền.

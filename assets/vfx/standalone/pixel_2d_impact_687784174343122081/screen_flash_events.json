@@ -1,0 +1,19 @@
+{
+  "layer": "behind_vfx",
+  "description": "Optional screen-space backdrop flashes, replacing the original filmed environment during impact frames.",
+  "events": [
+    {
+      "start_frame": 78,
+      "end_frame": 78,
+      "color": "#000000",
+      "opacity": 1.0
+    },
+    {
+      "start_frame": 79,
+      "end_frame": 81,
+      "color": "#f5e2d6",
+      "opacity": 1.0
+    }
+  ],
+  "fps": 30
+}

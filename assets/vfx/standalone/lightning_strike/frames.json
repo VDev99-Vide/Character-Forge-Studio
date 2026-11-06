@@ -1,0 +1,15 @@
+{
+  "name": "vfx_lightning_strike_pixel",
+  "source": "Pinterest pin 825566175496380921 (720x1280 portrait, 60fps, 14.33s full video; ONLY first 5s used per user request)",
+  "frames": 150,
+  "fps": 30,
+  "frame_w": 192,
+  "frame_h": 341,
+  "cols": 15,
+  "rows": 10,
+  "trim_source_frames": "first 5s only: source frames 0-299 at 60fps, sampled every 2nd frame -> 150 frames at 30fps; at the 5s cut the ring is still mid-fade (coverage ~0.03), the effect continues past 5s in the source",
+  "method": "background subtraction vs median plate of 40 empty tail frames (t=13.5-14.3s, same static camera and checker floor); the two static skill icons at top-right are part of the plate, so they are removed with the background and only the lightning effect remains; soft alpha = clip((max-channel diff-16)/110), crop x 93-700 y 0-1077, NEAREST downscale to 192 wide",
+  "blending": "normal with transparency; Additive also works for lightning glow",
+  "direction": "vertical: lightning strikes from top of frame down into a ground ring; ring sits at bottom of frame",
+  "download_note": "pin page HTML had no direct mp4 (only HLS master playlist); video obtained from the 720w HLS variant's single fragmented-mp4 file (fd8648b2273a35d952d413ebe500418e_720w.cmfv, 720x1280, 60fps)"
+}

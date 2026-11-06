@@ -1,0 +1,14 @@
+{
+  "name": "vfx_fire_cone_pixel",
+  "source": "Pinterest pin 1045538869723986488 (256x144, 60fps)",
+  "note": "video repeats the same cone skill 3 times; this pack is cast 1 only (source frames 0-94, every 2nd frame)",
+  "frames": 48,
+  "fps": 30,
+  "frame_w": 128,
+  "frame_h": 92,
+  "cols": 8,
+  "rows": 6,
+  "crop_source": "x 24-225, y 0-144",
+  "method": "background subtraction vs median tail plate + Gaussian blur on alpha (radius 2) + warmth gate (R-B) blending low-warmth pixels toward orange glow (255,130,30) to remove the lit checker floor pattern; NEAREST downscale to 128 wide",
+  "blending": "normal with transparency; Additive also works for fire glow"
+}

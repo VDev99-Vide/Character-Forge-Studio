@@ -1,0 +1,32 @@
+{
+ "name": "fx27_cyan_dots",
+ "source": "itch sheet (pin46)",
+ "width": 102,
+ "height": 86,
+ "frame_count": 14,
+ "durations_ms": [
+  100,
+  100,
+  60,
+  100,
+  100,
+  100,
+  60,
+  100,
+  100,
+  100,
+  100,
+  100,
+  100,
+  100
+ ],
+ "total_ms": 1320,
+ "source_box": [
+  651,
+  752,
+  541,
+  626
+ ],
+ "method": "Already pixel art: native 1:1, exact key on pure black bg (0,0,0) - non-black pixels are the effect. Single cluster, mask-based.",
+ "note": "14 frames, durations 100/60ms, total 1.32s. Effects grow f1->f13, f14 slightly shrinks; loop resets (f14->f1). Black bg: use Additive for glow, Normal if the effect has dark colors."
+}

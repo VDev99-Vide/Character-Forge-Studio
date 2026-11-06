@@ -1,0 +1,13 @@
+{
+  "name": "vfx_green_burst_pixel",
+  "source": "Pinterest pin 1109785533168499692 (640x640, 30fps)",
+  "frames": 44,
+  "fps": 30,
+  "frame_w": 128,
+  "frame_h": 128,
+  "cols": 11,
+  "rows": 4,
+  "trim_source_frames": "0-43 (dropped empty tail 44-47)",
+  "method": "dark-green background level ~18: alpha = clip((max_channel-24)/120, 0, 1), NEAREST downscale to 128x128",
+  "blending": "normal with transparency; Additive also works for glow"
+}

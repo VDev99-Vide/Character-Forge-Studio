@@ -27,9 +27,14 @@
   </nav>
 </header>
 <div class="bar">
+  <div class="bar-modes" role="tablist" aria-label="Loại hiệu ứng">
+    <button class="mode-tab" type="button" data-mode="all" aria-selected="true">🌐 Tất cả <span id="count-all">0</span></button>
+    <button class="mode-tab" type="button" data-mode="code" aria-selected="false">💻 Code FX (Repo gốc) <span id="count-code">0</span></button>
+    <button class="mode-tab" type="button" data-mode="asset" aria-selected="false">🖼️ Asset FX (Sprite/Atlas từ Zip) <span id="count-asset">0</span></button>
+  </div>
   <div class="bar-in">
     <div class="chips" id="chips" role="toolbar" aria-label="Categories"></div>
-    <input id="q" type="search" placeholder="tìm mã FX-001, tên, id..." aria-label="Search effects" autocomplete="off">
+    <input id="q" type="search" placeholder="tìm mã FX-001, AFX-001, tên, id..." aria-label="Search effects" autocomplete="off">
   </div>
 </div>
 <main id="grid"></main>

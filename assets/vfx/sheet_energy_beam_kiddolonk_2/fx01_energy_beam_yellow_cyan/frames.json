@@ -1,0 +1,30 @@
+{
+ "name": "fx01_energy_beam_yellow_cyan",
+ "source": "itch Energy Beam kiddolonk (pin56)",
+ "width": 1920,
+ "height": 456,
+ "frame_count": 12,
+ "durations_ms": [
+  60,
+  60,
+  60,
+  60,
+  60,
+  60,
+  60,
+  60,
+  60,
+  60,
+  60,
+  60
+ ],
+ "total_ms": 720,
+ "source_box": [
+  0,
+  1919,
+  47,
+  502
+ ],
+ "method": "Already pixel art (native 1px detail at 1920x1080): native 1:1, exact key on flat bg (34,28,26), no conversion, no downscale. Horizontal beam strip, mask-based (clean all-bg gap rows 503-526 separates the two beams).",
+ "note": "12 frames, all 60ms = 16.67 fps, total 0.72s. Frames 1-6 repeat exactly as frames 7-12 (6-frame cycle played twice); all 12 kept in source order, trim to 6 frames for a single cycle. Beam spans the full frame width; anchor at either end."
+}

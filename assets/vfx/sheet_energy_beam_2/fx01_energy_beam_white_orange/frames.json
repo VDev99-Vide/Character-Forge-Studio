@@ -1,0 +1,30 @@
+{
+ "name": "fx01_energy_beam_white_orange",
+ "source": "itch Energy Beam (pin55)",
+ "width": 638,
+ "height": 179,
+ "frame_count": 12,
+ "durations_ms": [
+  60,
+  60,
+  60,
+  60,
+  60,
+  60,
+  60,
+  60,
+  60,
+  60,
+  60,
+  60
+ ],
+ "total_ms": 720,
+ "source_box": [
+  0,
+  637,
+  6,
+  184
+ ],
+ "method": "Already pixel art: native 1:1, exact key on flat bg (34,28,26), no conversion. Horizontal beam strip, mask-based (clean all-bg gap rows 185-208 separates the two beams).",
+ "note": "12 frames, all 60ms = 16.67 fps, total 0.72s. Beam spans the full frame width; use as a horizontal beam (anchor at either end)."
+}

@@ -1,0 +1,16 @@
+{
+  "name": "vfx_burst_chain_pixel",
+  "source": "Pinterest pin 133137732722180047 (GIF source, NOT video: 432x281, 7 frames, 90ms per frame, 11.11fps, 0.63s loop)",
+  "trim": "source frames 1-6 kept (0.54s at 11.11fps): single explosion burst -> second burst joins -> chain of bursts spreads right with flying sparks -> full chain with smoke -> bursts fade to embers -> dim red ember remnants. Source frame 7 is fully black (all pixels 0, empty loop spacer) and was dropped",
+  "frames": 6,
+  "fps": 11.11,
+  "frame_duration_ms": 90,
+  "frame_w": 192,
+  "frame_h": 122,
+  "cols": 6,
+  "rows": 1,
+  "crop_source": "x 4-417, y 4-267",
+  "method": "background is pure black (all corners 0,0,0 in all frames), so luminance threshold: alpha = clip((max_channel-8)/160). No blur needed: background is exactly black, no dither noise to melt; crisp anime explosion edges kept",
+  "blending": "normal with transparency; Additive also works for the fire glow",
+  "timing_note": "keep 90ms per frame (11.11fps) in Godot; at 30fps it would play 2.7x too fast"
+}

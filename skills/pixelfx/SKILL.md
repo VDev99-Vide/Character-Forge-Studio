@@ -25,9 +25,8 @@ make good ones.
 
 ## 1. Look for an existing effect first
 
-`node tools/list.mjs <words>` searches codes (`FX-001`..`FX-244`), ids, names, tags and descriptions (`node tools/list.mjs FX-001`,
-`node tools/list.mjs frost`, `node tools/list.mjs slash loop`). `docs/CATALOG.md` and `src/fx/index.js` (`effectCodes`) list every effect with its `FX-xxx` identifier code. Render the candidates (`node tools/render.mjs FX-001` or `node tools/render.mjs <id>`) and
-look at them before choosing. Most requests are an existing effect with different options:
+`node tools/list.mjs <words>` searches both Code FX (`FX-001`..`FX-244` in `src/fx/`) and Asset FX (`AFX-001`..`AFX-769` in `assets/vfx/`), matching codes, ids, names, tags and descriptions (`node tools/list.mjs FX-001`, `node tools/list.mjs AFX-001`,
+`node tools/list.mjs frost`, `node tools/list.mjs slash loop`). `docs/CATALOG.md` (Code FX) and `docs/ASSET_CATALOG.md` / `assets/vfx/index.js` (Asset FX with pre-built `atlas.png` / `sheet.png`, `preview.gif`, `frames/`, and `frames.json`) list every effect with its identifier code. Render Code FX candidates (`node tools/render.mjs FX-001` or `node tools/render.mjs <id>`) or inspect Asset FX files in `assets/vfx/<group>/<slug>/` before choosing. Most requests are an existing effect with different options:
 
 - `palette`: the main ramp, dark to bright, as hex strings. Any `PAL` ramp in `src/core/color.js` (fire ember
   lava smoke dust ice water electric volt poison holy heal arcane shadow blood earth stone gold leaf wood metal

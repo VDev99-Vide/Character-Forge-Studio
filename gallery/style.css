@@ -69,6 +69,52 @@ h1 { margin: 0; font: 400 54px/66px var(--display); letter-spacing: 0; }
   background: var(--ground);
   border-bottom: 1px solid var(--line);
 }
+.bar-modes {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: flex;
+  gap: 8px;
+  padding-top: 10px;
+  flex-wrap: wrap;
+}
+.mode-tab {
+  border: 1px solid var(--line);
+  background: #0d0d0d;
+  padding: 8px 14px;
+  font: 500 13px/1 var(--mono);
+  cursor: pointer;
+  color: var(--quiet);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.mode-tab span {
+  background: #222;
+  color: var(--ink);
+  padding: 2px 6px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.mode-tab:hover { border-color: var(--quiet); color: var(--ink); }
+.mode-tab[aria-selected="true"] {
+  background: var(--ink);
+  color: var(--ground);
+  border-color: var(--ink);
+}
+.mode-tab[aria-selected="true"] span {
+  background: var(--ground);
+  color: var(--ink);
+}
+.mode-tab[data-mode="asset"][aria-selected="true"] {
+  background: #00e5a3;
+  border-color: #00e5a3;
+  color: #000;
+}
+.mode-tab[data-mode="code"][aria-selected="true"] {
+  background: var(--patch);
+  border-color: var(--patch);
+  color: #000;
+}
 .bar-in { max-width: 1240px; margin: 0 auto; display: flex; gap: 12px; align-items: center; padding-block: 10px; }
 .chips { display: flex; flex-wrap: wrap; gap: 5px; flex: 1; min-width: 0; padding-block: 2px; }
 .chips::-webkit-scrollbar { display: none; }
@@ -113,6 +159,17 @@ main { max-width: 1240px; margin: 0 auto; }
 .tile:hover .stage, .tile:focus-visible .stage { border-color: var(--quiet); }
 .tile.selected .stage { border-color: var(--patch); box-shadow: 0 0 0 1px var(--patch); }
 .tile canvas, .detail canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+.tile img.asset-preview, .sheet .big img.asset-preview {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  image-rendering: pixelated;
+  padding: 6px;
+}
+.tile.asset .badge-id b { color: #00e5a3; }
+.tile.asset .btn-agent:hover { border-color: #00e5a3; background: #0d221c; }
+.tile.asset .btn-agent.copied { background: #00e5a3; border-color: #00e5a3; color: #000; }
 .tile-badges {
   position: absolute;
   top: 6px;

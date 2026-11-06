@@ -2,17 +2,42 @@
 // opens one effect with its options, a sprite sheet and the code to use it.
 
 import { effects, categories, effectCodes } from "../src/fx/index.js";
+import { assetEffects, assetCategories } from "../assets/vfx/index.js";
 import { createFrame, clearFrame, createFx, createAct, actBounds, composite, backdrop, drawActor, painterFor, stockActor, actorAlphaOf, PAL, BACKDROPS } from "../src/core/index.js";
 
-const REPO = "https://github.com/patch-gg/pixelfx";
-const FX = Object.entries(effects).map(([id, mod], idx) => {
+const REPO = "https://github.com/VDev99-Vide/pixelfx";
+const CODE_FX = Object.entries(effects).map(([id, mod], idx) => {
   const meta = { fps: 30, bg: "dark", loop: false, duration: 1, tags: [], options: {}, ...mod.meta };
   const code = effectCodes?.[id] ?? `FX-${String(idx + 1).padStart(3, "0")}`;
-  return { id, code, cat: id.split("/")[0], name: meta.name, mod: { ...mod, meta }, meta };
+  return { kind: "code", id, code, cat: id.split("/")[0], name: meta.name, mod: { ...mod, meta }, meta };
 });
+const ASSET_FX = assetEffects.map((a) => ({
+  kind: "asset",
+  id: a.id,
+  code: a.code,
+  cat: a.cat,
+  name: a.name,
+  asset: a,
+  meta: {
+    name: a.name,
+    desc: a.desc,
+    size: a.size,
+    origin: [Math.round(a.size[0] / 2), Math.round(a.size[1] / 2)],
+    fps: a.fps,
+    duration: a.duration,
+    loop: true,
+    bg: "dark",
+    tags: a.tags || [],
+  },
+}));
+const FX = [...CODE_FX, ...ASSET_FX];
+const ALL_CATEGORIES = [
+  ...categories.map((c) => ({ ...c, kind: "code" })),
+  ...assetCategories.map((c) => ({ ...c, kind: "asset" })),
+];
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 // full-screen effects (transitions, weather, impact frames) fill a 16:9 stage edge to edge instead of floating in it
-const isScreen = (fx) => fx.meta.size[0] >= 320 && Math.abs(fx.meta.size[0] / fx.meta.size[1] - 16 / 9) < 0.05;
+const isScreen = (fx) => fx.kind === "code" && fx.meta.size[0] >= 320 && Math.abs(fx.meta.size[0] / fx.meta.size[1] - 16 / 9) < 0.05;
 const $ = (s) => document.querySelector(s);
 function el(tag, props = {}, kids = []) {
   const e = Object.assign(document.createElement(tag), props);
@@ -129,9 +154,27 @@ async function copyText(text, label) {
 }
 function formatFxSpec(fx, extra = {}) {
   const m = fx.meta;
+  if (fx.kind === "asset") {
+    const a = fx.asset;
+    const lines = [
+      `- Định danh (Asset Code): [${fx.code}] ${fx.id} — "${m.name}"`,
+      `- Phân loại: Asset VFX (Sprite Sheet / Frame Sequence có sẵn)`,
+      `- Thư mục Asset: ${a.dir}/`,
+      `- Sprite Sheet / Atlas: ${a.sheet}`,
+      ...(a.framesDir ? [`- Thư mục Frames rời: ${a.framesDir}/ (${a.frames} frames PNG)`] : []),
+      `- Preview GIF: ${a.gif}`,
+      `- Metadata JSON: ${a.json}`,
+      ...(a.readme ? [`- Tài liệu hướng dẫn: ${a.readme}`] : []),
+      `- Thông số: Kích thước ${m.size[0]}×${m.size[1]}px, ${a.frames} frames @ ${m.fps} FPS (${m.duration}s)`,
+      `- Mô tả: ${m.desc}`,
+    ];
+    if (extra.flip) lines.push(`- Hướng: Lật ngang (flip: true)`);
+    return lines.join("\n");
+  }
   const acted = !!fx.mod.act;
   const lines = [
-    `- Định danh (Code): [${fx.code}] ${fx.id} — "${m.name}"`,
+    `- Định danh (Code FX): [${fx.code}] ${fx.id} — "${m.name}"`,
+    `- Phân loại: Code FX (Render trực tiếp từ code)`,
     `- File source: src/fx/${fx.id}.js`,
     `- Mô tả: ${m.desc}`,
     `- Thông số: Canvas ${m.size[0]}×${m.size[1]}px, Origin/Pivot (${m.origin[0]}, ${m.origin[1]}), ${m.fps} FPS, ${m.loop ? `loop (${+m.duration.toFixed(2)}s)` : `one-shot (${+m.duration.toFixed(2)}s)`}`,
@@ -144,6 +187,14 @@ function formatFxSpec(fx, extra = {}) {
 function buildAgentPrompt(fxList, extra = {}) {
   if (fxList.length === 1) {
     const fx = fxList[0];
+    if (fx.kind === "asset") {
+      const a = fx.asset;
+      return [
+        `Hãy thiết kế và gắn hiệu ứng Asset [${fx.code}] (${fx.id}) vào cho character của tôi:`,
+        formatFxSpec(fx, extra),
+        `- Tích hợp: Đọc thông số frame/fps trong "${a.json}" và sử dụng Sprite Sheet "${a.sheet}" (hoặc chuỗi frame PNG trong "${a.framesDir || a.dir}") để gắn vào animation/skill của character.`,
+      ].join("\n");
+    }
     return [
       `Hãy thiết kế và gắn hiệu ứng [${fx.code}] (${fx.id}) vào cho character của tôi:`,
       formatFxSpec(fx, extra),
@@ -153,7 +204,7 @@ function buildAgentPrompt(fxList, extra = {}) {
   return [
     `Hãy thiết kế và gắn bộ ${fxList.length} hiệu ứng sau vào cho character của tôi:`,
     ...fxList.map((fx, i) => `\n${i + 1}.\n${formatFxSpec(fx)}`),
-    `\nHãy tích hợp các hiệu ứng trên từ thư mục src/fx/, đồng bộ điểm gốc (origin) và chuyển động pose/timing cho character.`,
+    `\nHãy tích hợp các hiệu ứng trên (Code FX từ src/fx/ và Asset FX từ assets/vfx/), đồng bộ điểm gốc (origin/pivot) và chuyển động pose/timing cho character.`,
   ].join("\n");
 }
 function updateTray() {
@@ -175,23 +226,31 @@ const tiles = [];
 const sections = [];
 function build() {
   $("#count").textContent = FX.length;
+  $("#count-all").textContent = FX.length;
+  $("#count-code").textContent = CODE_FX.length;
+  $("#count-asset").textContent = ASSET_FX.length;
   const main = $("#grid");
-  for (const c of categories) {
+  for (const c of ALL_CATEGORIES) {
     const list = FX.filter((f) => f.cat === c.id);
     if (!list.length) continue;
     const grid = el("div", { className: "grid" });
     const sec = el("section", { id: c.id }, [el("div", { className: "section-head" }, [el("h2", { textContent: c.name + "." }), el("p", { textContent: c.blurb })]), grid]);
     sections.push({ c, sec, list });
     for (const fx of list) {
-      const cv = el("canvas", { ariaLabel: fx.name });
-      const b = fx.mod.act ? actBounds(fx.mod) : null, [fw, fh] = b ? [b.x1 - b.x0, b.y1 - b.y0] : fx.meta.size;
+      const isAsset = fx.kind === "asset";
+      const mediaEl = isAsset
+        ? el("img", { className: "asset-preview", alt: fx.name, loading: "lazy" })
+        : el("canvas", { ariaLabel: fx.name });
+      const b = !isAsset && fx.mod.act ? actBounds(fx.mod) : null;
+      const [fw, fh] = b ? [b.x1 - b.x0, b.y1 - b.y0] : fx.meta.size;
+      const pathHint = isAsset ? fx.asset.dir : `src/fx/${fx.id}.js`;
       const idBtn = el("button", { className: "badge-id", type: "button", title: "Click để copy mã định danh ID" }, [
         el("b", { textContent: fx.code }),
         fx.id,
       ]);
       idBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        copyText(`[${fx.code}] ${fx.id} (src/fx/${fx.id}.js)`, `Đã copy định danh: [${fx.code}] ${fx.id}`);
+        copyText(`[${fx.code}] ${fx.id} (${pathHint})`, `Đã copy định danh: [${fx.code}] ${fx.id}`);
       });
       const pickBtn = el("button", { className: "badge-pick", type: "button", textContent: "+ Chọn", title: "Chọn nhiều hiệu ứng để gộp prompt cho Agent" });
       pickBtn.setAttribute("aria-pressed", "false");
@@ -217,15 +276,23 @@ function build() {
           agentBtn.textContent = `⚡ Copy cho Agent (${fx.code})`;
         }, 1400);
       });
-      const fig = el("figure", { className: isScreen(fx) ? "tile big screen" : fw > 200 || fh > 170 || (b && (fw > 130 || fx.mod.act.target || fx.mod.act.targets)) ? "tile big" : "tile", tabIndex: 0 }, [
+      const tileCls = isAsset
+        ? "tile asset"
+        : isScreen(fx)
+          ? "tile big screen"
+          : fw > 200 || fh > 170 || (b && (fw > 130 || fx.mod.act.target || fx.mod.act.targets))
+            ? "tile big"
+            : "tile";
+      const subLabel = isAsset ? `${fx.asset.frames}f · ${+fx.meta.duration.toFixed(2)}s` : fx.meta.loop ? "loop" : `${+fx.meta.duration.toFixed(2)}s`;
+      const fig = el("figure", { className: tileCls, tabIndex: 0 }, [
         el("div", { className: "stage" }, [
           el("div", { className: "tile-badges" }, [idBtn, pickBtn]),
-          cv,
+          mediaEl,
         ]),
-        el("figcaption", {}, [el("b", { textContent: fx.name }), el("small", { textContent: fx.meta.loop ? "loop" : `${+fx.meta.duration.toFixed(2)}s` })]),
+        el("figcaption", {}, [el("b", { textContent: fx.name }), el("small", { textContent: subLabel })]),
         el("div", { className: "tile-actions" }, [agentBtn]),
       ]);
-      const t = { fx, fig, cv, pickBtn, player: null, visible: false, hover: false };
+      const t = { fx, fig, cv: isAsset ? null : mediaEl, img: isAsset ? mediaEl : null, pickBtn, player: null, visible: false, hover: false, loaded: false };
       fig.addEventListener("click", () => openDetail(fx));
       fig.addEventListener("keydown", (e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), openDetail(fx)));
       fig.addEventListener("pointerenter", () => (t.hover = true));
@@ -239,30 +306,57 @@ function build() {
     for (const e of entries) {
       const t = tiles.find((x) => x.fig === e.target);
       t.visible = e.isIntersecting;
-      if (t.visible && !t.player) {
-        t.player = isScreen(t.fx) ? new Player(t.cv, t.fx, 16 / 9, 1) : new Player(t.cv, t.fx, 6 / 5, 1.25);
-        if (reduced) t.player.seek(t.fx.meta.duration * 0.4);
+      if (t.visible) {
+        if (t.fx.kind === "asset") {
+          if (!t.loaded && t.img) {
+            t.img.src = "../" + t.fx.asset.gif;
+            t.loaded = true;
+          }
+        } else if (!t.player) {
+          t.player = isScreen(t.fx) ? new Player(t.cv, t.fx, 16 / 9, 1) : new Player(t.cv, t.fx, 6 / 5, 1.25);
+          if (reduced) t.player.seek(t.fx.meta.duration * 0.4);
+        }
       }
     }
-  }, { rootMargin: "200px" });
+  }, { rootMargin: "250px" });
   tiles.forEach((t) => io.observe(t.fig));
 }
 
-// ---- filters
-const state = { cat: "all", q: "" };
+// ---- filters & modes
+const state = { mode: "all", cat: "all", q: "" };
 function chips() {
   const box = $("#chips");
+  box.replaceChildren();
+  const visibleSections = sections.filter((s) => state.mode === "all" || s.c.kind === state.mode);
+  const totalInMode = visibleSections.reduce((sum, s) => sum + s.list.length, 0);
   const mk = (id, label, n) => {
     const b = el("button", { className: "chip", type: "button" }, [label, el("span", { textContent: n })]);
     b.dataset.cat = id;
+    b.setAttribute("aria-pressed", String(id === state.cat));
     b.addEventListener("click", () => setCat(id));
     box.append(b);
   };
-  mk("all", "all", FX.length);
-  for (const s of sections) mk(s.c.id, s.c.name, s.list.length);
+  mk("all", "all", totalInMode);
+  for (const s of visibleSections) mk(s.c.id, s.c.name, s.list.length);
+}
+function setMode(mode) {
+  state.mode = ["all", "code", "asset"].includes(mode) ? mode : "all";
+  document.querySelectorAll(".mode-tab").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.mode === state.mode)));
+  if (state.cat !== "all") {
+    const sec = sections.find((s) => s.c.id === state.cat);
+    if (!sec || (state.mode !== "all" && sec.c.kind !== state.mode)) state.cat = "all";
+  }
+  chips();
+  filter();
 }
 function setCat(id, fromHash = false) {
-  state.cat = sections.some((s) => s.c.id === id) ? id : "all";
+  const sec = sections.find((s) => s.c.id === id);
+  if (sec && state.mode !== "all" && sec.c.kind !== state.mode) {
+    state.mode = sec.c.kind;
+    document.querySelectorAll(".mode-tab").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.mode === state.mode)));
+    chips();
+  }
+  state.cat = sec ? id : "all";
   document.querySelectorAll(".chip").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.cat === state.cat)));
   if (!fromHash) history.replaceState(null, "", state.cat === "all" ? location.pathname : "#" + state.cat);
   filter();
@@ -272,10 +366,11 @@ function filter() {
   const q = state.q.trim().toLowerCase();
   let shown = 0;
   for (const s of sections) {
+    const modeMatch = state.mode === "all" || s.c.kind === state.mode;
     let any = false;
     for (const fx of s.list) {
       const t = tiles.find((x) => x.fx === fx);
-      const hit = (state.cat === "all" || state.cat === s.c.id) && (!q || [fx.code, fx.id, fx.name, fx.meta.desc, ...fx.meta.tags].join(" ").toLowerCase().includes(q));
+      const hit = modeMatch && (state.cat === "all" || state.cat === s.c.id) && (!q || [fx.code, fx.id, fx.name, fx.meta.desc, ...fx.meta.tags].join(" ").toLowerCase().includes(q));
       t.fig.hidden = !hit;
       any ||= hit;
       shown += hit;
@@ -289,16 +384,71 @@ function filter() {
 let detail = null;
 function openDetail(fx) {
   const d = $("#detail");
-  const big = $("#big"), screen = isScreen(fx);
-  big.parentElement.classList.toggle("screen", screen);
-  detail = screen ? new Player(big, fx, 16 / 9, 1) : new Player(big, fx, 16 / 10, 1.6);
+  const big = $("#big"), stageBox = big.parentElement, screen = isScreen(fx);
+  stageBox.classList.toggle("screen", screen);
+  const oldImg = stageBox.querySelector("img.asset-preview");
+  if (oldImg) oldImg.remove();
   const m = fx.meta;
   $("#d-name").textContent = m.name;
-  $("#d-id").textContent = `[${fx.code}] ${fx.id}`;
+  $("#d-id").textContent = `[${fx.code}] ${fx.id} (${fx.kind === "asset" ? "Asset VFX" : "Code FX"})`;
   $("#d-desc").textContent = m.desc;
+
+  if (fx.kind === "asset") {
+    big.hidden = true;
+    const a = fx.asset;
+    const previewImg = el("img", { className: "asset-preview", src: "../" + a.gif, alt: m.name });
+    stageBox.insertBefore(previewImg, $("#d-close"));
+    stageBox.style.background = "";
+    detail = {
+      isAsset: true,
+      fx,
+      flip: false,
+      playing: true,
+      previewImg,
+      stageBox,
+      opts: {},
+      setBg(kind) {
+        const bgColors = { dark: "#15131d", dungeon: "#1c1614", night: "#0d1220", grass: "#142216", day: "#446688", light: "#cccccc", none: "repeating-conic-gradient(#1a1a1a 0% 25%, #111 0% 50%) 0 0 / 16px 16px" };
+        stageBox.style.background = bgColors[kind] || "#15131d";
+      },
+      restart() {
+        previewImg.src = "../" + a.gif + "?t=" + Date.now();
+        previewImg.style.transform = this.flip ? "scaleX(-1)" : "";
+      },
+      tick() {},
+    };
+    $("#d-facts").replaceChildren(
+      ...[
+        ["loại", "Asset VFX (Sprite Sheet + GIF + Frames PNG)"],
+        ["thời lượng", `${m.duration} s, ${a.frames} frames @ ${m.fps} fps`],
+        ["kích thước", `${m.size[0]} × ${m.size[1]} px`],
+        ["thư mục", a.dir],
+        ["sprite sheet", a.sheet],
+        ...(a.framesDir ? [["frames rời", `${a.framesDir}/ (${a.frames} files)`]] : []),
+        ["metadata", a.json],
+      ].flatMap(([k, v]) => [el("dt", { textContent: k }), el("dd", { textContent: v })]),
+    );
+    $("#d-bg").replaceChildren(...BACKDROPS.concat("none").map((b) => btn(b, () => detail.setBg(b), b === "dark", "bg")));
+    $("#d-speed").replaceChildren();
+    $("#d-pal").parentElement.hidden = true;
+    $("#d-play").hidden = true;
+    $("#d-actor").hidden = true;
+    $("#d-flip").setAttribute("aria-pressed", "false");
+    $("#d-sheet").replaceChildren();
+    code(fx);
+    d.showModal();
+    d.scrollTop = 0;
+    return;
+  }
+
+  big.hidden = false;
+  stageBox.style.background = "";
+  $("#d-pal").parentElement.hidden = false;
+  $("#d-play").hidden = false;
+  detail = screen ? new Player(big, fx, 16 / 9, 1) : new Player(big, fx, 16 / 10, 1.6);
   const frames = Math.round(m.duration * m.fps) + (m.loop ? 0 : 1);
   $("#d-facts").replaceChildren(
-    ...[["kind", m.loop ? "loop" : "one-shot"], ["length", `${+m.duration.toFixed(2)} s, ${frames} frames at ${m.fps} fps`], ...(fx.mod.act ? [["acted", actFacts(fx.mod)]] : []), ["canvas", `${m.size[0]} × ${m.size[1]} px`], ["tags", m.tags.join(", ")]].flatMap(([k, v]) => [el("dt", { textContent: k }), el("dd", { textContent: v })]),
+    ...[["loại", m.loop ? "Code FX · loop" : "Code FX · one-shot"], ["length", `${+m.duration.toFixed(2)} s, ${frames} frames at ${m.fps} fps`], ...(fx.mod.act ? [["acted", actFacts(fx.mod)]] : []), ["canvas", `${m.size[0]} × ${m.size[1]} px`], ["tags", m.tags.join(", ")]].flatMap(([k, v]) => [el("dt", { textContent: k }), el("dd", { textContent: v })]),
   );
   // controls
   $("#d-bg").replaceChildren(...BACKDROPS.concat("none").map((b) => btn(b, () => detail.setBg(b), b === m.bg, "bg")));
@@ -335,6 +485,23 @@ function btn(label, fn, on, group) {
   return b;
 }
 function code(fx) {
+  if (fx.kind === "asset") {
+    const a = fx.asset;
+    $("#d-code").textContent = [
+      `// [${fx.code}] ${fx.name} (${fx.id})`,
+      `// Sprite Sheet: ${a.sheet}`,
+      `// Preview GIF:  ${a.gif}`,
+      `// Metadata:     ${a.json}`,
+      ...(a.framesDir ? [`// Frames PNG:   ${a.framesDir}/ (${a.frames} frames)`] : []),
+      ``,
+      `const meta = await fetch("/${a.json}").then((r) => r.json());`,
+      `const sheet = new Image();`,
+      `sheet.src = "/${a.sheet}";`,
+      `// Size: ${fx.meta.size[0]}x${fx.meta.size[1]}px, ${a.frames} frames @ ${fx.meta.fps} FPS (${fx.meta.duration}s)`,
+    ].join("\n");
+    $("#d-src").href = `../${a.json}`;
+    return;
+  }
   const v = fx.id.split("/")[1].replace(/-(\w)/g, (_, c) => c.toUpperCase());
   const opts = { x: 160, y: 120, ...(detail.opts.palette ? { palette: "[…]" } : {}), ...(detail.flip ? { flip: true } : {}) };
   const acted = !!fx.mod.act, make = acted ? "createAct" : "createFx";
@@ -354,7 +521,17 @@ function code(fx) {
   $("#d-src").href = `${REPO}/blob/main/src/fx/${fx.id}.js`;
 }
 function sheet() {
-  const fx = detail.fx, m = fx.meta, [w, h] = m.size, n = Math.max(1, Math.round(m.duration * m.fps) + (m.loop ? 0 : 1));
+  const fx = detail.fx, m = fx.meta;
+  if (fx.kind === "asset") {
+    const a = fx.asset;
+    const pic = el("img", { src: "../" + a.sheet, alt: `${m.name} sprite sheet` });
+    $("#d-sheet").replaceChildren(
+      pic,
+      el("p", { textContent: `Sprite Sheet / Atlas có sẵn: ${a.sheet} (${a.frames} frames of ${m.size[0]} × ${m.size[1]} px, ${m.fps} fps).` }),
+    );
+    return;
+  }
+  const [w, h] = m.size, n = Math.max(1, Math.round(m.duration * m.fps) + (m.loop ? 0 : 1));
   const cols = Math.min(n, Math.max(1, Math.ceil(Math.sqrt((n * h) / w)))), rows = Math.ceil(n / cols);
   const cv = el("canvas", { width: cols * w, height: rows * h }), ctx = cv.getContext("2d");
   const frame = createFrame(w, h), img = ctx.createImageData(w, h);
@@ -375,18 +552,21 @@ function wireDetail() {
   d.addEventListener("close", () => (detail = null));
   d.addEventListener("click", (e) => e.target === d && d.close());
   $("#d-play").addEventListener("click", (e) => {
+    if (!detail || detail.isAsset) return;
     detail.playing = !detail.playing;
     e.target.setAttribute("aria-pressed", String(detail.playing));
     e.target.textContent = detail.playing ? "pause" : "play";
   });
-  $("#d-again").addEventListener("click", () => detail.restart());
+  $("#d-again").addEventListener("click", () => detail && detail.restart());
   $("#d-flip").addEventListener("click", (e) => {
+    if (!detail) return;
     detail.flip = !detail.flip;
     e.target.setAttribute("aria-pressed", String(detail.flip));
     detail.restart();
     code(detail.fx);
   });
   $("#d-actor").addEventListener("click", (e) => {
+    if (!detail || detail.isAsset) return;
     detail.actor = !detail.actor;
     e.target.setAttribute("aria-pressed", String(detail.actor));
     // with an act, the character is the performance: off shows the effect alone, as a sprite sheet has it
@@ -394,10 +574,12 @@ function wireDetail() {
     detail.dirty = true;
   });
   $("#d-seed").addEventListener("click", () => {
+    if (!detail || detail.isAsset) return;
     detail.opts.seed = 1 + Math.floor(Math.random() * 9999);
     detail.restart();
   });
   $("#d-pal").addEventListener("change", (e) => {
+    if (!detail || detail.isAsset) return;
     if (e.target.value) detail.opts.palette = PAL[e.target.value];
     else delete detail.opts.palette;
     detail.restart();
@@ -418,12 +600,13 @@ function wireDetail() {
   $("#d-copy-id").addEventListener("click", () => {
     if (!detail) return;
     const fx = detail.fx;
-    copyText(`[${fx.code}] ${fx.id} (src/fx/${fx.id}.js)`, `Đã copy định danh: [${fx.code}] ${fx.id}`);
+    const pathHint = fx.kind === "asset" ? fx.asset.dir : `src/fx/${fx.id}.js`;
+    copyText(`[${fx.code}] ${fx.id} (${pathHint})`, `Đã copy định danh: [${fx.code}] ${fx.id}`);
   });
   $("#d-copy-agent").addEventListener("click", () => {
     if (!detail) return;
     const fx = detail.fx;
-    const pal = $("#d-pal").value || undefined;
+    const pal = fx.kind === "code" ? $("#d-pal").value || undefined : undefined;
     copyText(buildAgentPrompt([fx], { pal, flip: detail.flip }), `Đã copy lệnh Agent cho [${fx.code}] ${fx.id}!`);
   });
   $("#tray-copy").addEventListener("click", () => {
@@ -434,6 +617,9 @@ function wireDetail() {
   $("#tray-clear").addEventListener("click", () => {
     selected.clear();
     updateTray();
+  });
+  document.querySelectorAll(".mode-tab").forEach((b) => {
+    b.addEventListener("click", () => setMode(b.dataset.mode));
   });
 }
 
