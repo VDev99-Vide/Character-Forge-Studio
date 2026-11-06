@@ -29,11 +29,19 @@
 <div class="bar">
   <div class="bar-in">
     <div class="chips" id="chips" role="toolbar" aria-label="Categories"></div>
-    <input id="q" type="search" placeholder="search" aria-label="Search effects" autocomplete="off">
+    <input id="q" type="search" placeholder="tìm mã FX-001, tên, id..." aria-label="Search effects" autocomplete="off">
   </div>
 </div>
 <main id="grid"></main>
-<p class="empty" id="none" hidden>Nothing matches that. Try fire, slash or loop.</p>
+<p class="empty" id="none" hidden>Nothing matches that. Try FX-001, fire, slash or loop.</p>
+<div class="tray" id="tray" hidden>
+  <span id="tray-info">Đã chọn 0 hiệu ứng</span>
+  <div class="tray-actions">
+    <button class="btn primary" id="tray-copy" type="button">⚡ Copy tất cả cho Agent</button>
+    <button class="btn" id="tray-clear" type="button">Bỏ chọn</button>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
 <dialog class="detail" id="detail" aria-labelledby="d-name">
   <div class="sheet">
     <div>
@@ -41,7 +49,11 @@
     </div>
     <div class="info">
       <h2 id="d-name"></h2>
-      <div class="id" id="d-id"></div>
+      <div class="id-bar">
+        <span class="id" id="d-id"></span>
+        <button class="btn btn-xs" id="d-copy-id" type="button">Copy ID</button>
+        <button class="btn btn-xs primary" id="d-copy-agent" type="button">⚡ Copy cho Agent</button>
+      </div>
       <p id="d-desc"></p>
       <dl class="facts" id="d-facts"></dl>
       <div class="controls">

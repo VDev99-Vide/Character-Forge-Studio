@@ -1,13 +1,14 @@
 // The gallery: every effect playing live from its own code. Tiles start when they scroll into view; a click
 // opens one effect with its options, a sprite sheet and the code to use it.
 
-import { effects, categories } from "../src/fx/index.js";
+import { effects, categories, effectCodes } from "../src/fx/index.js";
 import { createFrame, clearFrame, createFx, createAct, actBounds, composite, backdrop, drawActor, painterFor, stockActor, actorAlphaOf, PAL, BACKDROPS } from "../src/core/index.js";
 
 const REPO = "https://github.com/patch-gg/pixelfx";
-const FX = Object.entries(effects).map(([id, mod]) => {
+const FX = Object.entries(effects).map(([id, mod], idx) => {
   const meta = { fps: 30, bg: "dark", loop: false, duration: 1, tags: [], options: {}, ...mod.meta };
-  return { id, cat: id.split("/")[0], name: meta.name, mod: { ...mod, meta }, meta };
+  const code = effectCodes?.[id] ?? `FX-${String(idx + 1).padStart(3, "0")}`;
+  return { id, code, cat: id.split("/")[0], name: meta.name, mod: { ...mod, meta }, meta };
 });
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 // full-screen effects (transitions, weather, impact frames) fill a 16:9 stage edge to edge instead of floating in it
@@ -104,6 +105,71 @@ class Player {
   }
 }
 
+// ---- one-click agent prompt & multi-select
+const selected = new Set();
+let toastTimer = null;
+function showToast(msg) {
+  const box = $("#toast");
+  box.textContent = msg;
+  box.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => (box.hidden = true), 2600);
+}
+async function copyText(text, label) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const ta = el("textarea", { value: text });
+    document.body.append(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+  }
+  showToast(label);
+}
+function formatFxSpec(fx, extra = {}) {
+  const m = fx.meta;
+  const acted = !!fx.mod.act;
+  const lines = [
+    `- Định danh (Code): [${fx.code}] ${fx.id} — "${m.name}"`,
+    `- File source: src/fx/${fx.id}.js`,
+    `- Mô tả: ${m.desc}`,
+    `- Thông số: Canvas ${m.size[0]}×${m.size[1]}px, Origin/Pivot (${m.origin[0]}, ${m.origin[1]}), ${m.fps} FPS, ${m.loop ? `loop (${+m.duration.toFixed(2)}s)` : `one-shot (${+m.duration.toFixed(2)}s)`}`,
+  ];
+  if (acted) lines.push(`- Chuyển động Character (Act): ${actFacts(fx.mod)} (dùng createAct hoặc đọc ${fx.id.split("/")[1].replace(/-(\w)/g, (_, c) => c.toUpperCase())}.act)`);
+  if (extra.pal) lines.push(`- Bảng màu (Palette): PAL.${extra.pal}`);
+  if (extra.flip) lines.push(`- Hướng: Lật ngang (flip: true)`);
+  return lines.join("\n");
+}
+function buildAgentPrompt(fxList, extra = {}) {
+  if (fxList.length === 1) {
+    const fx = fxList[0];
+    return [
+      `Hãy thiết kế và gắn hiệu ứng [${fx.code}] (${fx.id}) vào cho character của tôi:`,
+      formatFxSpec(fx, extra),
+      `- Tích hợp: Import từ "src/fx/${fx.id}.js" (hoặc xuất sprite sheet bằng \`node tools/render.mjs ${fx.id} --sheet\`), căn chỉnh theo điểm gốc origin (${fx.meta.origin[0]}, ${fx.meta.origin[1]}) và đồng bộ pose/timing của character với hiệu ứng này.`,
+    ].join("\n");
+  }
+  return [
+    `Hãy thiết kế và gắn bộ ${fxList.length} hiệu ứng sau vào cho character của tôi:`,
+    ...fxList.map((fx, i) => `\n${i + 1}.\n${formatFxSpec(fx)}`),
+    `\nHãy tích hợp các hiệu ứng trên từ thư mục src/fx/, đồng bộ điểm gốc (origin) và chuyển động pose/timing cho character.`,
+  ].join("\n");
+}
+function updateTray() {
+  const tray = $("#tray");
+  tray.hidden = selected.size === 0;
+  $("#tray-info").textContent = `Đã chọn ${selected.size} hiệu ứng (${[...selected].map((f) => f.code).join(", ")})`;
+  for (const t of tiles) {
+    const on = selected.has(t.fx);
+    t.fig.classList.toggle("selected", on);
+    if (t.pickBtn) {
+      t.pickBtn.setAttribute("aria-pressed", String(on));
+      t.pickBtn.textContent = on ? "✓ Đã chọn" : "+ Chọn";
+    }
+  }
+}
+
 // ---- tiles
 const tiles = [];
 const sections = [];
@@ -119,11 +185,47 @@ function build() {
     for (const fx of list) {
       const cv = el("canvas", { ariaLabel: fx.name });
       const b = fx.mod.act ? actBounds(fx.mod) : null, [fw, fh] = b ? [b.x1 - b.x0, b.y1 - b.y0] : fx.meta.size;
-      const fig = el("figure", { className: isScreen(fx) ? "tile big screen" : fw > 200 || fh > 170 || (b && (fw > 130 || fx.mod.act.target || fx.mod.act.targets)) ? "tile big" : "tile", tabIndex: 0 }, [
-        el("div", { className: "stage" }, cv),
-        el("figcaption", {}, [el("b", { textContent: fx.name }), el("small", { textContent: fx.meta.loop ? "loop" : `${+fx.meta.duration.toFixed(2)}s` })]),
+      const idBtn = el("button", { className: "badge-id", type: "button", title: "Click để copy mã định danh ID" }, [
+        el("b", { textContent: fx.code }),
+        fx.id,
       ]);
-      const t = { fx, fig, cv, player: null, visible: false, hover: false };
+      idBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        copyText(`[${fx.code}] ${fx.id} (src/fx/${fx.id}.js)`, `Đã copy định danh: [${fx.code}] ${fx.id}`);
+      });
+      const pickBtn = el("button", { className: "badge-pick", type: "button", textContent: "+ Chọn", title: "Chọn nhiều hiệu ứng để gộp prompt cho Agent" });
+      pickBtn.setAttribute("aria-pressed", "false");
+      pickBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (selected.has(fx)) selected.delete(fx);
+        else selected.add(fx);
+        updateTray();
+      });
+      const agentBtn = el("button", {
+        className: "btn-agent",
+        type: "button",
+        textContent: `⚡ Copy cho Agent (${fx.code})`,
+        title: "One-click copy lệnh yêu cầu Agent gắn hiệu ứng này vào Character",
+      });
+      agentBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        copyText(buildAgentPrompt([fx]), `Đã copy lệnh Agent cho [${fx.code}] ${fx.id}!`);
+        agentBtn.classList.add("copied");
+        agentBtn.textContent = `✓ Đã copy ${fx.code}`;
+        setTimeout(() => {
+          agentBtn.classList.remove("copied");
+          agentBtn.textContent = `⚡ Copy cho Agent (${fx.code})`;
+        }, 1400);
+      });
+      const fig = el("figure", { className: isScreen(fx) ? "tile big screen" : fw > 200 || fh > 170 || (b && (fw > 130 || fx.mod.act.target || fx.mod.act.targets)) ? "tile big" : "tile", tabIndex: 0 }, [
+        el("div", { className: "stage" }, [
+          el("div", { className: "tile-badges" }, [idBtn, pickBtn]),
+          cv,
+        ]),
+        el("figcaption", {}, [el("b", { textContent: fx.name }), el("small", { textContent: fx.meta.loop ? "loop" : `${+fx.meta.duration.toFixed(2)}s` })]),
+        el("div", { className: "tile-actions" }, [agentBtn]),
+      ]);
+      const t = { fx, fig, cv, pickBtn, player: null, visible: false, hover: false };
       fig.addEventListener("click", () => openDetail(fx));
       fig.addEventListener("keydown", (e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), openDetail(fx)));
       fig.addEventListener("pointerenter", () => (t.hover = true));
@@ -173,7 +275,7 @@ function filter() {
     let any = false;
     for (const fx of s.list) {
       const t = tiles.find((x) => x.fx === fx);
-      const hit = (state.cat === "all" || state.cat === s.c.id) && (!q || [fx.id, fx.name, fx.meta.desc, ...fx.meta.tags].join(" ").toLowerCase().includes(q));
+      const hit = (state.cat === "all" || state.cat === s.c.id) && (!q || [fx.code, fx.id, fx.name, fx.meta.desc, ...fx.meta.tags].join(" ").toLowerCase().includes(q));
       t.fig.hidden = !hit;
       any ||= hit;
       shown += hit;
@@ -192,7 +294,7 @@ function openDetail(fx) {
   detail = screen ? new Player(big, fx, 16 / 9, 1) : new Player(big, fx, 16 / 10, 1.6);
   const m = fx.meta;
   $("#d-name").textContent = m.name;
-  $("#d-id").textContent = fx.id;
+  $("#d-id").textContent = `[${fx.code}] ${fx.id}`;
   $("#d-desc").textContent = m.desc;
   const frames = Math.round(m.duration * m.fps) + (m.loop ? 0 : 1);
   $("#d-facts").replaceChildren(
@@ -312,6 +414,26 @@ function wireDetail() {
       e.target.textContent = "selected";
     }
     setTimeout(() => (e.target.textContent = "copy"), 1400);
+  });
+  $("#d-copy-id").addEventListener("click", () => {
+    if (!detail) return;
+    const fx = detail.fx;
+    copyText(`[${fx.code}] ${fx.id} (src/fx/${fx.id}.js)`, `Đã copy định danh: [${fx.code}] ${fx.id}`);
+  });
+  $("#d-copy-agent").addEventListener("click", () => {
+    if (!detail) return;
+    const fx = detail.fx;
+    const pal = $("#d-pal").value || undefined;
+    copyText(buildAgentPrompt([fx], { pal, flip: detail.flip }), `Đã copy lệnh Agent cho [${fx.code}] ${fx.id}!`);
+  });
+  $("#tray-copy").addEventListener("click", () => {
+    if (!selected.size) return;
+    const list = [...selected];
+    copyText(buildAgentPrompt(list), `Đã copy lệnh Agent cho ${list.length} hiệu ứng!`);
+  });
+  $("#tray-clear").addEventListener("click", () => {
+    selected.clear();
+    updateTray();
   });
 }
 

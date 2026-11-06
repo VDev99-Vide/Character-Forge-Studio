@@ -5,28 +5,39 @@ import { join, dirname, relative, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
 import { createFrame, clearFrame, createFx, createAct, actBounds, actTiming, composite, painterFor, drawActor, stockActor, backdrop, actorAlphaOf } from "../../src/core/index.js";
+import { categories } from "../../src/fx/categories.js";
 import { rasterText, textWidth } from "../../src/core/font.js";
 import { encodePNG } from "./png.mjs";
 
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 export const FX_DIR = join(ROOT, "src", "fx");
 
-/** Every effect id ("fire/torch"), sorted. Files starting with _ are helpers, not effects. */
+/** Every effect id ("fire/torch"), sorted in gallery/category order. Files starting with _ are helpers, not effects. */
 export function allIds(dir = FX_DIR) {
   const out = [];
   if (!existsSync(dir)) return out;
-  for (const cat of readdirSync(dir).sort()) {
+  const order = new Map(categories.map((c, i) => [c.id, i]));
+  const rank = (cat) => order.get(cat) ?? 99;
+  for (const cat of readdirSync(dir).sort((a, b) => rank(a) - rank(b) || a.localeCompare(b))) {
     const d = join(dir, cat);
     if (cat.startsWith("_") || !statSync(d).isDirectory()) continue;
-    for (const f of readdirSync(d).sort()) if (f.endsWith(".js") && !f.startsWith("_")) out.push(`${cat}/${f.slice(0, -3)}`);
+    for (const f of readdirSync(d).sort()) if (f.endsWith(".js") && !f.endsWith("index.js") && !f.startsWith("_")) out.push(`${cat}/${f.slice(0, -3)}`);
   }
   return out;
 }
 
-/** Ids matching patterns: "fire/torch", "fire" (a category), "fire/*", "*torch*", or a file path. */
+/** Ids matching patterns: "FX-001", "fire/torch", "fire" (a category), "fire/*", "*torch*", or a file path. */
 export function resolveIds(patterns, dir = FX_DIR) {
   const all = allIds(dir), out = new Set();
   for (let p of patterns) {
+    const mCode = /^fx-(\d+)$/i.exec(p.trim());
+    if (mCode) {
+      const idx = parseInt(mCode[1], 10) - 1;
+      if (all[idx]) {
+        out.add(all[idx]);
+        continue;
+      }
+    }
     if (p.endsWith(".js")) p = relative(dir, p.startsWith("/") ? p : join(process.cwd(), p)).split(sep).join("/").replace(/\.js$/, "");
     const re = new RegExp("^" + p.split("*").map((s) => s.replace(/[.+?^${}()|[\]\\]/g, "\\$&")).join(".*") + "$");
     const hits = all.filter((id) => id === p || id.startsWith(p + "/") || re.test(id));

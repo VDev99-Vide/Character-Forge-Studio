@@ -25,8 +25,8 @@ make good ones.
 
 ## 1. Look for an existing effect first
 
-`node tools/list.mjs <words>` searches ids, names, tags and descriptions (`node tools/list.mjs frost`,
-`node tools/list.mjs slash loop`). `docs/CATALOG.md` lists everything by category. Render the candidates and
+`node tools/list.mjs <words>` searches codes (`FX-001`..`FX-244`), ids, names, tags and descriptions (`node tools/list.mjs FX-001`,
+`node tools/list.mjs frost`, `node tools/list.mjs slash loop`). `docs/CATALOG.md` and `src/fx/index.js` (`effectCodes`) list every effect with its `FX-xxx` identifier code. Render the candidates (`node tools/render.mjs FX-001` or `node tools/render.mjs <id>`) and
 look at them before choosing. Most requests are an existing effect with different options:
 
 - `palette`: the main ramp, dark to bright, as hex strings. Any `PAL` ramp in `src/core/color.js` (fire ember
